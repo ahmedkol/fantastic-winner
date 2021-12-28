@@ -1,0 +1,123 @@
+#big_wrapper {
+    border: solid 5px #d2dae2;
+    padding-left: 10px;
+    color: #bdc3c7;
+    background-image: url(imgfile/hacker-gb6d52dae2_1920.jpg);
+    padding: 15px;
+    font-size: 30px;
+    border: 40px;
+    border-bottom: 120px;
+    width: 0 auto;
+
+}
+
+#wrap {
+    border: solid 1px #d2dae2;
+    color:#ecf0f1;
+    padding-left: 10px;
+    padding-right: 10px;
+    tsxt-align: center;
+    margin-right: 5px;
+    font-size: 30px;
+    padding-top: 30px;
+    background-image: url(imgfile/data-leak-freepik2067.jpg);
+    background-attachment: fixed;
+    background-position: bottom;
+    margin: 0;
+}
+
+
+#dfdccount {
+    padding-left: 1000px;
+    color: #474787;
+
+}   
+
+
+
+}
+
+
+h1{
+    color: #c0392b;
+}
+
+img {
+    border: solid 3px red;
+}
+
+
+.txt_para {
+    color: #ecf0f1;
+    font-size: 25px;
+
+}
+
+.redColor {
+    color: #2ecc71;
+}
+
+a{
+    text-decoration: none;
+}
+
+a:hover{
+    text-decoration: underline;
+}
+
+li {
+    padding-left: 15px;
+    display: inline-block;
+}
+
+ul {
+    padding-left: 600px;
+}
+
+
+
+#blanskd{
+    color:  #6c5ce7;
+    font-size: 30px;
+   border: solid 2px #95a5a6;
+   background-color: black;
+   
+
+}
+
+#cdsxas {
+    color: #6c5ce7;
+    font-size: 30px;
+    float: left;
+    border: solid 2px #95a5a6;
+    background-color: black;
+    width:  1075px;
+    padding-left: 20px;
+    
+}
+
+#sidBare{
+    border: solid 2px black;
+    float: right;
+    width: 250px;
+    background-color: yellow;
+    float: top; 
+   padding-bottom: 400px;
+}
+
+*{
+   margin: 0;
+
+}   
+
+#wammed{
+    color: #6c5ce7;
+    font-size: 30px;
+    float: left;
+    border: solid 2px #95a5a6;
+    background-color: black;
+    width:  1075px;
+    padding-left: 16px;
+
+}
+   
