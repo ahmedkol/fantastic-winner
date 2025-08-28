@@ -101,24 +101,56 @@ def test_vector_database():
     try:
         from langchain_ollama import OllamaEmbeddings
         from langchain_chroma import Chroma
+        import tempfile
+        import shutil
+        import time as _qt_time
+        import gc as _qt_gc
         
         # Test embeddings
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
         print("Embeddings model initialized")
         
-        # Test vector database
-        vector_db = Chroma(
-            persist_directory="./test_chroma_db",
-            embedding_function=embeddings
-        )
-        print("Vector database initialized")
-        
-        # Clean up test database
-        import shutil
-        if os.path.exists("./test_chroma_db"):
-            shutil.rmtree("./test_chroma_db")
-        
-        return True
+        # Use a unique temp directory to avoid file locks
+        temp_dir = tempfile.mkdtemp(prefix="test_chroma_db_")
+        vector_db = None
+        try:
+            vector_db = Chroma(
+                persist_directory=temp_dir,
+                embedding_function=embeddings
+            )
+            print("Vector database initialized")
+            return True
+        finally:
+            # Best-effort cleanup on Windows (release file locks first)
+            try:
+                if vector_db is not None:
+                    try:
+                        # Some versions expose _client.reset(); ignore if not
+                        vector_db._client.reset()  # type: ignore[attr-defined]
+                    except Exception:
+                        pass
+                    try:
+                        vector_db._collection = None  # type: ignore[attr-defined]
+                    except Exception:
+                        pass
+                del vector_db
+                _qt_gc.collect()
+                _qt_time.sleep(0.2)
+            except Exception:
+                pass
+            
+            def _onerror(func, path, exc_info):
+                try:
+                    os.chmod(path, 0o777)
+                    func(path)
+                except Exception:
+                    pass
+            
+            if os.path.exists(temp_dir):
+                try:
+                    shutil.rmtree(temp_dir, onerror=_onerror)
+                except Exception as _e:
+                    print(f"Warning: could not remove temp DB dir: {_e}")
         
     except Exception as e:
         print(f"Error during vector database test: {e}")

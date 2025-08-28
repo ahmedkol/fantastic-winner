@@ -50,8 +50,8 @@ def test_vector_database():
         from langchain_chroma import Chroma
         from langchain_core.documents import Document
         
-        # Create temporary directory for test database
-        temp_dir = tempfile.mkdtemp()
+        # Create temporary directory for test database (unique per run)
+        temp_dir = tempfile.mkdtemp(prefix="db_perf_")
         
         try:
             # Initialize embeddings and database
@@ -104,9 +104,11 @@ def test_vector_database():
             return True
             
         finally:
-            # Clean up temporary directory
-            shutil.rmtree(temp_dir)
-            print("Cleaned temporary files")
+            # Best-effort cleanup (Windows file locks)
+            try:
+                shutil.rmtree(temp_dir)
+            except Exception as _e:
+                print(f"Warning: could not remove temp DB dir: {_e}")
         
     except Exception as e:
         print(f"Error in vector database test: {e}")
@@ -157,7 +159,10 @@ def test_text_processing():
             
         finally:
             # Clean up temporary file
-            os.unlink(temp_file)
+            try:
+                os.unlink(temp_file)
+            except Exception:
+                pass
         
     except Exception as e:
         print(f"Error in text processing test: {e}")
@@ -173,8 +178,8 @@ def test_database_integration():
         from langchain.text_splitter import RecursiveCharacterTextSplitter
         from langchain_core.documents import Document
         
-        # Create temporary directory
-        temp_dir = tempfile.mkdtemp()
+        # Create temporary directory (unique per run)
+        temp_dir = tempfile.mkdtemp(prefix="db_int_")
         
         try:
             # Initialize components
@@ -237,7 +242,10 @@ def test_database_integration():
             return True
             
         finally:
-            shutil.rmtree(temp_dir)
+            try:
+                shutil.rmtree(temp_dir)
+            except Exception as _e:
+                print(f"Warning: could not remove temp DB dir: {_e}")
         
     except Exception as e:
         print(f"Error in integration test: {e}")
