@@ -353,6 +353,14 @@ class RonaApp(ctk.CTk):
         )
         self.test_web_search_button.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
         
+        # Deep Search button
+        self.deep_search_button = ctk.CTkButton(
+            self.control_frame,
+            text="بحث عميق (Deep Search)",
+            command=self.deep_search_dialog
+        )
+        self.deep_search_button.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
+        
         self.initialize_agent()
 
     def initialize_agent(self):
@@ -584,6 +592,58 @@ class RonaApp(ctk.CTk):
         self.user_input.configure(state="normal")
         self.user_input.focus()
         self.send_button.configure(state="normal")
+
+    def deep_search_dialog(self):
+        """Prompt user for a deep search query and run deep search across engines."""
+        try:
+            dialog = ctk.CTkInputDialog(
+                text="أدخل استعلام البحث العميق (Deep Search)",
+                title="Deep Search"
+            )
+            query = dialog.get_input()
+            if not query:
+                self.display_agent_response("لم يتم إدخال استعلام.")
+                return
+            threading.Thread(target=partial(self.run_deep_search, query)).start()
+        except Exception as e:
+            self.display_agent_response(f"حدث خطأ في نافذة البحث العميق: {str(e)[:100]}")
+
+    def run_deep_search(self, query: str):
+        """Run deep search across multiple engines and show consolidated results."""
+        try:
+            from internet_search import InternetSearch
+            search = InternetSearch()
+            engines = ["google", "bing", "duckduckgo"]
+            all_results = []
+            for eng in engines:
+                results = search.search_web(query, engine=eng) or []
+                for r in results:
+                    r_copy = dict(r)
+                    r_copy['engine'] = eng
+                    all_results.append(r_copy)
+
+            if not all_results:
+                self.after(0, self.display_agent_response, "No results found in deep search.")
+                return
+
+            # Deduplicate by URL
+            seen = set()
+            deduped = []
+            for r in all_results:
+                url = r.get('url', '')
+                if url and url not in seen:
+                    seen.add(url)
+                    deduped.append(r)
+
+            message = f"🔎 Deep Search results for '{query}':\n\n"
+            for i, r in enumerate(deduped[:10], 1):
+                message += f"{i}. [{r.get('engine','')}] {r.get('title','')}\n   {r.get('url','')}\n   {r.get('snippet','')}\n\n"
+
+            # Add hint that local DB will be used as well
+            message = ("📚 Local DB will also be considered with these results.\n\n" + message)
+            self.after(0, self.display_agent_response, message)
+        except Exception as e:
+            self.after(0, self.display_agent_response, f"Deep search error: {str(e)[:120]}")
 
     def copy_selected_text(self):
         """Copy selected text to clipboard"""

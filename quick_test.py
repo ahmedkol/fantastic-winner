@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Quick Test Script for Rona_v5
-اختبار سريع لمكونات رونا
 """
 
 import sys
@@ -11,7 +10,7 @@ import subprocess
 
 def test_imports():
     """Test if all required modules can be imported"""
-    print("🔍 اختبار استيراد المكتبات...")
+    print("Checking required Python packages...")
     
     modules = [
         'customtkinter',
@@ -28,55 +27,55 @@ def test_imports():
     for module in modules:
         try:
             __import__(module)
-            print(f"✅ {module}")
+            print(f"OK  {module}")
         except ImportError as e:
-            print(f"❌ {module}: {e}")
+            print(f"FAIL {module}: {e}")
             failed_imports.append(module)
     
     if failed_imports:
-        print(f"\n❌ فشل في استيراد {len(failed_imports)} مكتبة")
+        print(f"\nFAIL: could not import {len(failed_imports)} package(s)")
         return False
     else:
-        print("✅ جميع المكتبات متاحة")
+        print("All required packages are available")
         return True
 
 def test_ollama():
     """Test Ollama installation and model"""
-    print("\n🤖 اختبار Ollama...")
+    print("\nOllama check...")
     
     try:
         # Check if Ollama is installed
         result = subprocess.run(['ollama', '--version'], capture_output=True, text=True)
         if result.returncode == 0:
-            print(f"✅ Ollama مثبت: {result.stdout.strip()}")
+            print(f"Ollama found: {result.stdout.strip()}")
         else:
-            print("❌ Ollama غير مثبت")
+            print("Ollama is not installed or not in PATH")
             return False
         
         # Check if model is available
         result = subprocess.run(['ollama', 'list'], capture_output=True, text=True)
         if result.returncode == 0:
             if 'mistral:7b' in result.stdout:
-                print("✅ نموذج mistral:7b متاح")
+                print("Model mistral:7b is available")
                 return True
             else:
-                print("⚠️ نموذج mistral:7b غير متاح")
-                print("💡 قم بتشغيل: ollama pull mistral:7b")
+                print("Model mistral:7b not available")
+                print("Hint: run 'ollama pull mistral:7b'")
                 return False
         else:
-            print("❌ لا يمكن التحقق من النماذج")
+            print("Cannot list models")
             return False
             
     except FileNotFoundError:
-        print("❌ Ollama غير مثبت")
+        print("Ollama not installed")
         return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار Ollama: {e}")
+        print(f"Error while checking Ollama: {e}")
         return False
 
 def test_internet_search():
     """Test internet search functionality"""
-    print("\n🌐 اختبار البحث في الإنترنت...")
+    print("\nInternet search quick test...")
     
     try:
         from internet_search import InternetSearch
@@ -85,19 +84,19 @@ def test_internet_search():
         results = search.search_web("Python programming", engine='google')
         
         if results:
-            print(f"✅ نجح البحث في الإنترنت - تم العثور على {len(results)} نتيجة")
+            print(f"Internet search OK - found {len(results)} results")
             return True
         else:
-            print("⚠️ البحث في الإنترنت لم يعيد نتائج")
+            print("Internet search returned no results")
             return False
             
     except Exception as e:
-        print(f"❌ خطأ في اختبار البحث في الإنترنت: {e}")
+        print(f"Error during internet search test: {e}")
         return False
 
 def test_vector_database():
     """Test vector database functionality"""
-    print("\n📚 اختبار قاعدة البيانات المتجهة...")
+    print("\nVector database quick test...")
     
     try:
         from langchain_ollama import OllamaEmbeddings
@@ -105,14 +104,14 @@ def test_vector_database():
         
         # Test embeddings
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
-        print("✅ تم تهيئة نموذج التضمين")
+        print("Embeddings model initialized")
         
         # Test vector database
         vector_db = Chroma(
             persist_directory="./test_chroma_db",
             embedding_function=embeddings
         )
-        print("✅ تم تهيئة قاعدة البيانات المتجهة")
+        print("Vector database initialized")
         
         # Clean up test database
         import shutil
@@ -122,12 +121,12 @@ def test_vector_database():
         return True
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار قاعدة البيانات المتجهة: {e}")
+        print(f"Error during vector database test: {e}")
         return False
 
 def test_gui():
     """Test GUI components"""
-    print("\n🖥️ اختبار واجهة المستخدم...")
+    print("\nGUI quick test...")
     
     try:
         import customtkinter as ctk
@@ -136,27 +135,27 @@ def test_gui():
         root = ctk.CTk()
         root.withdraw()  # Hide the window
         
-        label = ctk.CTkLabel(root, text="اختبار")
-        print("✅ تم إنشاء عناصر واجهة المستخدم")
+        label = ctk.CTkLabel(root, text="GUI test")
+        print("GUI components created")
         
         root.destroy()
         return True
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار واجهة المستخدم: {e}")
+        print(f"Error during GUI test: {e}")
         return False
 
 def main():
     """Run all tests"""
-    print("🚀 بدء الاختبار السريع لـ Rona_v5...")
+    print("Starting quick test for Rona_v5...")
     print("=" * 50)
     
     tests = [
-        ("استيراد المكتبات", test_imports),
+        ("Imports", test_imports),
         ("Ollama", test_ollama),
-        ("البحث في الإنترنت", test_internet_search),
-        ("قاعدة البيانات المتجهة", test_vector_database),
-        ("واجهة المستخدم", test_gui)
+        ("InternetSearch", test_internet_search),
+        ("VectorDB", test_vector_database),
+        ("GUI", test_gui)
     ]
     
     passed = 0
@@ -167,19 +166,19 @@ def main():
             if test_func():
                 passed += 1
         except Exception as e:
-            print(f"❌ خطأ غير متوقع في {test_name}: {e}")
+            print(f"Unexpected error in {test_name}: {e}")
     
     print("\n" + "=" * 50)
-    print(f"📊 نتائج الاختبار: {passed}/{total} نجح")
+    print(f"Results: {passed}/{total} passed")
     
     if passed == total:
-        print("🎉 جميع الاختبارات نجحت! رونا جاهز للاستخدام.")
-        print("\n💡 لتشغيل رونا:")
+        print("All quick tests passed. Rona is ready.")
+        print("\nTo run Rona:")
         print("   python run_rona.py")
     else:
-        print("⚠️ بعض الاختبارات فشلت. راجع الأخطاء أعلاه.")
-        print("\n💡 للحصول على المساعدة:")
-        print("   راجع ملف INSTALL.md")
+        print("Some tests failed. Check errors above.")
+        print("\nFor help:")
+        print("   See INSTALL.md")
     
     return passed == total
 
