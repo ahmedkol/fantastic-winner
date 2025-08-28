@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
 import time
 import re
+from langchain.tools import tool
 
 class InternetSearch:
     """Manages internet search functionality for Rona"""
