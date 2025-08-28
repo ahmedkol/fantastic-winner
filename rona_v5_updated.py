@@ -49,16 +49,13 @@ def _configure_external_paths():
             site_pkgs = os.path.join(venv_base, 'Lib', 'site-packages')
             if os.path.isdir(site_pkgs) and site_pkgs not in sys.path:
                 sys.path.insert(0, site_pkgs)
-        # Determine chroma dir
+        # Determine chroma dir (force user's fixed path on Windows by default)
         chroma_env = os.environ.get('RONA_CHROMA_DIR')
-        if chroma_env and os.path.isdir(chroma_env):
+        if chroma_env:
             return chroma_env
-        # If chroma_db exists under external base, use it
-        if venv_base:
-            chroma_candidate = os.path.join(venv_base, 'chroma_db')
-            if os.path.isdir(chroma_candidate):
-                return chroma_candidate
-        # Fallback to local folder
+        if is_windows:
+            return r'D:\\Expand\\Ai\\chroma_db'
+        # Fallback to local folder on non-Windows
         return os.path.abspath(os.path.join(os.getcwd(), 'chroma_db'))
     except Exception:
         return os.path.abspath(os.path.join(os.getcwd(), 'chroma_db'))
