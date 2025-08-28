@@ -13,6 +13,7 @@ class InternetSearch:
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            , 'Accept-Language': 'ar,en;q=0.9'
         })
         self.search_engines = {
             'google': 'https://www.google.com/search?q={}',
@@ -27,30 +28,33 @@ class InternetSearch:
         Search the web using the specified search engine
         """
         try:
-            if engine not in self.search_engines:
-                engine = 'google'
-            
-            # Encode the query for URL
-            encoded_query = quote_plus(query)
-            search_url = self.search_engines[engine].format(encoded_query)
-            
-            print(f"🔍 Searching web for: {query}")
-            
-            # Make the request
-            response = self.session.get(search_url, timeout=self.timeout)
-            response.raise_for_status()
-            
-            # Parse the results
-            soup = BeautifulSoup(response.text, 'html.parser')
-            
-            if engine == 'google':
-                return self._parse_google_results(soup)
-            elif engine == 'bing':
-                return self._parse_bing_results(soup)
-            elif engine == 'duckduckgo':
-                return self._parse_duckduckgo_results(soup)
-            else:
-                return self._parse_google_results(soup)
+            engines_order = [engine] if engine in self.search_engines else ['google', 'bing', 'duckduckgo']
+            # Ensure we try all engines if first returns nothing
+            tried_any = False
+            for eng in engines_order + [e for e in ['google', 'bing', 'duckduckgo'] if e not in engines_order]:
+                tried_any = True
+                encoded_query = quote_plus(query)
+                search_url = self.search_engines[eng].format(encoded_query)
+                print(f"🔍 Searching web via {eng}: {query}")
+                try:
+                    response = self.session.get(search_url, timeout=self.timeout)
+                    response.raise_for_status()
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    if eng == 'google':
+                        results = self._parse_google_results(soup)
+                    elif eng == 'bing':
+                        results = self._parse_bing_results(soup)
+                    else:
+                        results = self._parse_duckduckgo_results(soup)
+                    if results:
+                        return results
+                except requests.RequestException as e:
+                    print(f"❌ {eng} request failed: {str(e)[:50]}")
+                    continue
+                except Exception as e:
+                    print(f"❌ {eng} parsing failed: {str(e)[:50]}")
+                    continue
+            return [] if tried_any else []
                 
         except requests.RequestException as e:
             print(f"❌ Search request failed: {str(e)[:50]}")
