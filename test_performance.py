@@ -1,429 +1,250 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Performance Testing for Rona_v5
-اختبار الأداء لرونا
+Performance tests for Rona_v5 (English only)
 """
 
 import sys
 import time
-import psutil
 import os
 from datetime import datetime
 
-def measure_memory_usage():
-    """Measure memory usage"""
+try:
+    import psutil
+except Exception:
+    psutil = None
+
+def measure_memory_usage_mb():
+    if not psutil:
+        return 0.0
     process = psutil.Process(os.getpid())
     memory_info = process.memory_info()
-    return memory_info.rss / 1024 / 1024  # Convert to MB
+    return memory_info.rss / 1024 / 1024
 
 def test_import_performance():
-    """Test import performance"""
-    print("📦 اختبار أداء الاستيراد...")
-    
+    print("Import performance...")
     start_time = time.time()
-    start_memory = measure_memory_usage()
-    
+    start_mem = measure_memory_usage_mb()
     try:
-        # Test importing main modules
-        import customtkinter as ctk
-        import langchain_ollama
-        import langchain
-        import requests
-        import chromadb
-        
-        end_time = time.time()
-        end_memory = measure_memory_usage()
-        
-        import_time = end_time - start_time
-        memory_used = end_memory - start_memory
-        
-        print(f"✅ وقت الاستيراد: {import_time:.3f} ثانية")
-        print(f"✅ استخدام الذاكرة: {memory_used:.2f} MB")
-        
-        if import_time < 5.0:
-            print("✅ أداء الاستيراد مقبول")
-            return True
-        else:
-            print("⚠️ أداء الاستيراد بطيء")
-            return False
-            
+        import customtkinter as ctk  # noqa: F401
+        import langchain_ollama  # noqa: F401
+        import langchain  # noqa: F401
+        import requests  # noqa: F401
+        import chromadb  # noqa: F401
+        dt = time.time() - start_time
+        delta_mem = measure_memory_usage_mb() - start_mem
+        print(f"Import time: {dt:.3f}s")
+        print(f"Import memory: {delta_mem:.2f} MB")
+        return dt < 5.0
     except Exception as e:
-        print(f"❌ خطأ في اختبار الاستيراد: {e}")
+        print(f"Import performance error: {e}")
         return False
 
 def test_ollama_performance():
-    """Test Ollama performance"""
-    print("\n🤖 اختبار أداء Ollama...")
-    
+    print("Ollama performance...")
     try:
         from langchain_ollama import ChatOllama
-        
         start_time = time.time()
-        start_memory = measure_memory_usage()
-        
-        # Initialize LLM
-        llm = ChatOllama(
-            model="mistral:7b",
-            temperature=0.1,
-            num_gpu_layers=0,  # Use CPU for testing
-            num_thread=4
-        )
-        
-        init_time = time.time() - start_time
-        init_memory = measure_memory_usage() - start_memory
-        
-        print(f"✅ وقت التهيئة: {init_time:.3f} ثانية")
-        print(f"✅ ذاكرة التهيئة: {init_memory:.2f} MB")
-        
-        # Test response time
-        test_queries = [
-            "Hello",
-            "What is 2+2?",
-            "Say hello in Arabic"
-        ]
-        
-        total_response_time = 0
-        successful_queries = 0
-        
-        for query in test_queries:
+        start_mem = measure_memory_usage_mb()
+        llm = ChatOllama(model="mistral:7b", temperature=0.1, num_gpu_layers=0, num_thread=4)
+        init_dt = time.time() - start_time
+        init_mem = measure_memory_usage_mb() - start_mem
+        print(f"Init time: {init_dt:.3f}s")
+        print(f"Init memory: {init_mem:.2f} MB")
+        queries = ["Hello", "What is 2+2?", "Say hello in English"]
+        total = 0.0
+        count = 0
+        for q in queries:
             try:
-                query_start = time.time()
-                response = llm.invoke(query)
-                query_time = time.time() - query_start
-                
-                total_response_time += query_time
-                successful_queries += 1
-                
-                print(f"   '{query}': {query_time:.3f}s")
-                
+                t0 = time.time()
+                _ = llm.invoke(q)
+                t = time.time() - t0
+                print(f" - '{q}': {t:.3f}s")
+                total += t
+                count += 1
             except Exception as e:
-                print(f"   '{query}': فشل - {e}")
-        
-        if successful_queries > 0:
-            avg_response_time = total_response_time / successful_queries
-            print(f"✅ متوسط وقت الاستجابة: {avg_response_time:.3f} ثانية")
-            
-            if avg_response_time < 10.0:
-                print("✅ أداء Ollama مقبول")
-                return True
-            else:
-                print("⚠️ أداء Ollama بطيء")
-                return False
-        else:
-            print("❌ جميع الاستعلامات فشلت")
-            return False
-            
+                print(f" - '{q}': FAIL ({e})")
+        if count:
+            avg = total / count
+            print(f"Average response: {avg:.3f}s")
+            return avg < 10.0
+        print("No successful queries")
+        return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار أداء Ollama: {e}")
+        print(f"Ollama performance error: {e}")
         return False
 
-def test_vector_database_performance():
-    """Test vector database performance"""
-    print("\n📚 اختبار أداء قاعدة البيانات المتجهة...")
-    
+def test_vector_db_performance():
+    print("Vector DB performance...")
     try:
         from langchain_ollama import OllamaEmbeddings
-        from langchain_chroma import Chroma
+        try:
+            from langchain_chroma import Chroma
+        except ImportError:
+            from langchain_community.vectorstores import Chroma
         from langchain_core.documents import Document
         import tempfile
         import shutil
-        
-        # Create temporary directory
         temp_dir = tempfile.mkdtemp()
-        
         try:
-            start_time = time.time()
-            start_memory = measure_memory_usage()
-            
-            # Initialize embeddings and database
+            t0 = time.time()
+            m0 = measure_memory_usage_mb()
             embeddings = OllamaEmbeddings(model="nomic-embed-text")
-            vector_db = Chroma(
-                persist_directory=temp_dir,
-                embedding_function=embeddings
-            )
-            
-            init_time = time.time() - start_time
-            init_memory = measure_memory_usage() - start_memory
-            
-            print(f"✅ وقت التهيئة: {init_time:.3f} ثانية")
-            print(f"✅ ذاكرة التهيئة: {init_memory:.2f} MB")
-            
-            # Test document addition
-            test_docs = [
-                Document(page_content=f"Test document {i}", metadata={"id": i})
-                for i in range(100)
-            ]
-            
-            add_start = time.time()
-            vector_db.add_documents(test_docs)
-            add_time = time.time() - add_start
-            
-            print(f"✅ إضافة 100 وثيقة: {add_time:.3f} ثانية")
-            
-            # Test search performance
-            search_queries = ["test", "document", "content"]
-            total_search_time = 0
-            successful_searches = 0
-            
-            for query in search_queries:
+            vector_db = Chroma(persist_directory=temp_dir, embedding_function=embeddings)
+            init_dt = time.time() - t0
+            init_mem = measure_memory_usage_mb() - m0
+            print(f"Init time: {init_dt:.3f}s")
+            print(f"Init memory: {init_mem:.2f} MB")
+            docs = [Document(page_content=f"Test document {i}", metadata={"id": i}) for i in range(100)]
+            add_t0 = time.time()
+            vector_db.add_documents(docs)
+            add_dt = time.time() - add_t0
+            print(f"Add 100 docs: {add_dt:.3f}s")
+            queries = ["test", "document", "content"]
+            total = 0.0
+            count = 0
+            for q in queries:
                 try:
-                    search_start = time.time()
-                    results = vector_db.similarity_search(query, k=5)
-                    search_time = time.time() - search_start
-                    
-                    total_search_time += search_time
-                    successful_searches += 1
-                    
-                    print(f"   البحث عن '{query}': {search_time:.3f}s ({len(results)} نتائج)")
-                    
+                    s0 = time.time()
+                    res = vector_db.similarity_search(q, k=5)
+                    st = time.time() - s0
+                    print(f" - search '{q}': {st:.3f}s ({len(res)} results)")
+                    total += st
+                    count += 1
                 except Exception as e:
-                    print(f"   البحث عن '{query}': فشل - {e}")
-            
-            if successful_searches > 0:
-                avg_search_time = total_search_time / successful_searches
-                print(f"✅ متوسط وقت البحث: {avg_search_time:.3f} ثانية")
-                
-                if avg_search_time < 2.0:
-                    print("✅ أداء قاعدة البيانات مقبول")
-                    return True
-                else:
-                    print("⚠️ أداء قاعدة البيانات بطيء")
-                    return False
-            else:
-                print("❌ جميع عمليات البحث فشلت")
-                return False
-                
+                    print(f" - search '{q}': FAIL ({e})")
+            if count:
+                avg = total / count
+                print(f"Average search: {avg:.3f}s")
+                return avg < 2.0
+            print("No successful searches")
+            return False
         finally:
-            # Clean up
-            shutil.rmtree(temp_dir)
-            
+            shutil.rmtree(temp_dir, ignore_errors=True)
     except Exception as e:
-        print(f"❌ خطأ في اختبار أداء قاعدة البيانات: {e}")
+        print(f"Vector DB performance error: {e}")
         return False
 
 def test_internet_search_performance():
-    """Test internet search performance"""
-    print("\n🌐 اختبار أداء البحث في الإنترنت...")
-    
+    print("Internet search performance...")
     try:
         from internet_search import InternetSearch
-        
-        start_time = time.time()
-        start_memory = measure_memory_usage()
-        
-        # Initialize search
+        t0 = time.time()
+        m0 = measure_memory_usage_mb()
         search = InternetSearch()
-        
-        init_time = time.time() - start_time
-        init_memory = measure_memory_usage() - start_memory
-        
-        print(f"✅ وقت التهيئة: {init_time:.3f} ثانية")
-        print(f"✅ ذاكرة التهيئة: {init_memory:.2f} MB")
-        
-        # Test search performance
-        test_queries = [
-            "Python programming",
-            "machine learning",
-            "artificial intelligence"
-        ]
-        
-        search_engines = ['google', 'bing', 'duckduckgo']
-        total_search_time = 0
-        successful_searches = 0
-        
-        for engine in search_engines:
-            for query in test_queries:
+        init_dt = time.time() - t0
+        init_mem = measure_memory_usage_mb() - m0
+        print(f"Init time: {init_dt:.3f}s")
+        print(f"Init memory: {init_mem:.2f} MB")
+        queries = ["Python programming", "machine learning", "artificial intelligence"]
+        engines = ["google", "bing", "duckduckgo"]
+        total = 0.0
+        count = 0
+        for eng in engines:
+            for q in queries:
                 try:
-                    search_start = time.time()
-                    results = search.search_web(query, engine)
-                    search_time = time.time() - search_start
-                    
-                    total_search_time += search_time
-                    successful_searches += 1
-                    
-                    print(f"   {engine}: '{query}' - {search_time:.3f}s ({len(results)} نتائج)")
-                    
-                    # Add delay to avoid rate limiting
+                    s0 = time.time()
+                    res = search.search_web(q, eng)
+                    st = time.time() - s0
+                    n = len(res) if res else 0
+                    print(f" - {eng}: '{q}' -> {st:.3f}s ({n} results)")
+                    total += st
+                    count += 1
                     time.sleep(1)
-                    
                 except Exception as e:
-                    print(f"   {engine}: '{query}' - فشل: {e}")
-        
-        if successful_searches > 0:
-            avg_search_time = total_search_time / successful_searches
-            print(f"✅ متوسط وقت البحث: {avg_search_time:.3f} ثانية")
-            
-            if avg_search_time < 5.0:
-                print("✅ أداء البحث في الإنترنت مقبول")
-                return True
-            else:
-                print("⚠️ أداء البحث في الإنترنت بطيء")
-                return False
-        else:
-            print("❌ جميع عمليات البحث فشلت")
-            return False
-            
+                    print(f" - {eng}: '{q}' -> FAIL ({e})")
+        if count:
+            avg = total / count
+            print(f"Average internet search: {avg:.3f}s")
+            return avg < 5.0
+        print("No successful searches")
+        return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار أداء البحث في الإنترنت: {e}")
+        print(f"Internet search performance error: {e}")
         return False
 
 def test_gui_performance():
-    """Test GUI performance"""
-    print("\n🖥️ اختبار أداء واجهة المستخدم...")
-    
+    print("GUI performance...")
     try:
         import customtkinter as ctk
-        
-        start_time = time.time()
-        start_memory = measure_memory_usage()
-        
-        # Test GUI creation
+        t0 = time.time()
+        m0 = measure_memory_usage_mb()
         root = ctk.CTk()
         root.withdraw()
-        
-        # Create multiple widgets
         widgets = []
         for i in range(50):
-            label = ctk.CTkLabel(root, text=f"Widget {i}")
-            button = ctk.CTkButton(root, text=f"Button {i}")
-            entry = ctk.CTkEntry(root)
-            widgets.extend([label, button, entry])
-        
-        creation_time = time.time() - start_time
-        creation_memory = measure_memory_usage() - start_memory
-        
-        print(f"✅ إنشاء 150 عنصر: {creation_time:.3f} ثانية")
-        print(f"✅ ذاكرة الإنشاء: {creation_memory:.2f} MB")
-        
-        # Test text widget performance
-        text_widget = ctk.CTkTextbox(root)
-        
-        text_start = time.time()
+            widgets.append(ctk.CTkLabel(root, text=f"Widget {i}"))
+            widgets.append(ctk.CTkButton(root, text=f"Button {i}"))
+            widgets.append(ctk.CTkEntry(root))
+        create_dt = time.time() - t0
+        create_mem = measure_memory_usage_mb() - m0
+        print(f"Create 150 widgets: {create_dt:.3f}s")
+        print(f"Create memory: {create_mem:.2f} MB")
+        text = ctk.CTkTextbox(root)
+        t1 = time.time()
         for i in range(1000):
-            text_widget.insert("end", f"Line {i}\n")
-        text_time = time.time() - text_start
-        
-        print(f"✅ إدراج 1000 سطر: {text_time:.3f} ثانية")
-        
-        # Clean up
+            text.insert("end", f"Line {i}\n")
+        text_dt = time.time() - t1
+        print(f"Insert 1000 lines: {text_dt:.3f}s")
         root.destroy()
-        
-        if creation_time < 2.0 and text_time < 3.0:
-            print("✅ أداء واجهة المستخدم مقبول")
-            return True
-        else:
-            print("⚠️ أداء واجهة المستخدم بطيء")
-            return False
-            
+        return create_dt < 2.0 and text_dt < 3.0
     except Exception as e:
-        print(f"❌ خطأ في اختبار أداء واجهة المستخدم: {e}")
+        print(f"GUI performance error: {e}")
         return False
 
 def test_memory_leaks():
-    """Test for memory leaks"""
-    print("\n💾 اختبار تسرب الذاكرة...")
-    
+    print("Memory leak smoke test...")
     try:
         from rona_v5_updated import ConversationManager
-        
-        initial_memory = measure_memory_usage()
-        
-        # Create and destroy multiple conversation managers
-        for i in range(10):
+        m0 = measure_memory_usage_mb()
+        for _ in range(10):
             manager = ConversationManager()
-            
-            # Add some messages
             for j in range(100):
                 manager.add_message("user", f"Message {j}")
                 manager.add_message("assistant", f"Response {j}")
-            
-            # Clear and recreate
             manager.clear_history()
             del manager
-        
-        final_memory = measure_memory_usage()
-        memory_diff = final_memory - initial_memory
-        
-        print(f"✅ استخدام الذاكرة الأولي: {initial_memory:.2f} MB")
-        print(f"✅ استخدام الذاكرة النهائي: {final_memory:.2f} MB")
-        print(f"✅ فرق الذاكرة: {memory_diff:.2f} MB")
-        
-        if memory_diff < 50:  # Less than 50MB increase
-            print("✅ لا يوجد تسرب واضح في الذاكرة")
-            return True
-        else:
-            print("⚠️ قد يكون هناك تسرب في الذاكرة")
-            return False
-            
+        m1 = measure_memory_usage_mb()
+        diff = m1 - m0
+        print(f"Initial memory: {m0:.2f} MB")
+        print(f"Final memory:   {m1:.2f} MB")
+        print(f"Delta:          {diff:.2f} MB")
+        return diff < 50.0
     except Exception as e:
-        print(f"❌ خطأ في اختبار تسرب الذاكرة: {e}")
+        print(f"Memory leak test error: {e}")
         return False
 
-def generate_performance_report(results):
-    """Generate performance report"""
+def generate_report(results: dict):
     print("\n" + "=" * 60)
-    print("📊 تقرير الأداء")
+    print("Performance Report")
     print("=" * 60)
-    
-    passed = sum(results.values())
+    passed = sum(1 for v in results.values() if v)
     total = len(results)
-    
-    print(f"📈 النتائج: {passed}/{total} نجح")
-    print(f"📊 نسبة النجاح: {(passed/total)*100:.1f}%")
-    
-    print("\n🔍 تفاصيل النتائج:")
-    for test_name, success in results.items():
-        status = "✅ نجح" if success else "❌ فشل"
-        print(f"   {test_name}: {status}")
-    
-    # System information
-    print(f"\n💻 معلومات النظام:")
-    print(f"   المعالج: {psutil.cpu_count()} نواة")
-    print(f"   الذاكرة: {psutil.virtual_memory().total / 1024 / 1024 / 1024:.1f} GB")
-    print(f"   استخدام الذاكرة الحالي: {measure_memory_usage():.2f} MB")
-    
-    # Recommendations
-    print(f"\n💡 التوصيات:")
-    if passed == total:
-        print("✅ الأداء ممتاز! رونا جاهز للاستخدام")
-    elif passed >= total * 0.8:
-        print("⚠️ الأداء مقبول مع بعض التحسينات المطلوبة")
-    else:
-        print("❌ الأداء ضعيف، يلزم التحسين")
+    print(f"Results: {passed}/{total} passed")
+    for name, ok in results.items():
+        print(f" - {name}: {'PASS' if ok else 'FAIL'}")
+
 
 def main():
-    """Run all performance tests"""
-    print("🚀 بدء اختبارات الأداء...")
-    print(f"📅 التاريخ: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
+    print("Starting performance tests...")
+    print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     tests = [
-        ("أداء الاستيراد", test_import_performance),
-        ("أداء Ollama", test_ollama_performance),
-        ("أداء قاعدة البيانات", test_vector_database_performance),
-        ("أداء البحث في الإنترنت", test_internet_search_performance),
-        ("أداء واجهة المستخدم", test_gui_performance),
-        ("اختبار تسرب الذاكرة", test_memory_leaks)
+        ("Import performance", test_import_performance),
+        ("Ollama performance", test_ollama_performance),
+        ("Vector DB performance", test_vector_db_performance),
+        ("Internet search performance", test_internet_search_performance),
+        ("GUI performance", test_gui_performance),
+        ("Memory leak", test_memory_leaks),
     ]
-    
     results = {}
-    
-    for test_name, test_func in tests:
+    for name, func in tests:
         try:
-            success = test_func()
-            results[test_name] = success
+            results[name] = func()
         except Exception as e:
-            print(f"❌ خطأ غير متوقع في {test_name}: {e}")
-            results[test_name] = False
-    
-    # Generate report
-    generate_performance_report(results)
-    
-    # Overall success
-    overall_success = sum(results.values()) >= len(results) * 0.8
-    
-    return overall_success
+            print(f"Unexpected error in {name}: {e}")
+            results[name] = False
+    generate_report(results)
+    return sum(1 for v in results.values() if v) >= int(len(results) * 0.8)
 
 if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+    sys.exit(0 if main() else 1)

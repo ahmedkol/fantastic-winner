@@ -1,276 +1,186 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Ollama Tests (English only)
+"""
+
 import sys
 try:
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 except Exception:
     pass
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Test Ollama Functionality
-اختبار وظائف Ollama
-"""
 
-import sys
 import subprocess
 import time
 
 def test_ollama_installation():
-    """Test if Ollama is installed and accessible"""
-    print("🔧 اختبار تثبيت Ollama...")
-    
+    """Verify that the ollama CLI is installed and accessible."""
+    print("Checking Ollama installation...")
     try:
-        # Check if ollama command is available
-        result = subprocess.run(['ollama', '--version'], capture_output=True, text=True)
-        
+        result = subprocess.run(["ollama", "--version"], capture_output=True, text=True)
         if result.returncode == 0:
             version = result.stdout.strip()
-            print(f"✅ Ollama مثبت: {version}")
+            print(f"Ollama is installed: {version}")
             return True
-        else:
-            print("❌ Ollama مثبت ولكن لا يعمل بشكل صحيح")
-            return False
-            
+        print("Ollama appears to be installed but not working correctly")
+        return False
     except FileNotFoundError:
-        print("❌ Ollama غير مثبت")
-        print("💡 لتثبيت Ollama:")
-        print("   Windows: winget install Ollama.Ollama")
-        print("   macOS: brew install ollama")
-        print("   Linux: curl -fsSL https://ollama.ai/install.sh | sh")
+        print("Ollama is not installed")
+        print("Install tips:\n - Windows: winget install Ollama.Ollama\n - macOS: brew install ollama\n - Linux: curl -fsSL https://ollama.ai/install.sh | sh")
         return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار Ollama: {e}")
+        print(f"Error while checking Ollama: {e}")
         return False
 
 def test_ollama_service():
-    """Test if Ollama service is running"""
-    print("\n🚀 اختبار خدمة Ollama...")
-    
+    """Check that the ollama service responds."""
+    print("Checking Ollama service...")
     try:
-        # Check if ollama service is responding
-        result = subprocess.run(['ollama', 'list'], capture_output=True, text=True)
-        
+        result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
         if result.returncode == 0:
-            print("✅ خدمة Ollama تعمل")
+            print("Ollama service is running")
             return True
-        else:
-            print("❌ خدمة Ollama لا تعمل")
-            print("💡 لبدء خدمة Ollama:")
-            print("   ollama serve")
-            return False
-            
+        print("Ollama service is not running. Start it with: ollama serve")
+        return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار خدمة Ollama: {e}")
+        print(f"Error while checking Ollama service: {e}")
         return False
 
 def test_available_models():
-    """Test available models"""
-    print("\n🤖 اختبار النماذج المتاحة...")
-    
+    """List models and check for mistral:7b."""
+    print("Checking available Ollama models...")
     try:
-        result = subprocess.run(['ollama', 'list'], capture_output=True, text=True)
-        
+        result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
         if result.returncode == 0:
             models_output = result.stdout
-            print("✅ النماذج المتاحة:")
-            
-            # Parse and display models
-            lines = models_output.strip().split('\n')
-            if len(lines) > 1:  # Skip header line
+            print("Available models:")
+            lines = models_output.strip().split("\n")
+            if len(lines) > 1:
                 for line in lines[1:]:
                     if line.strip():
                         parts = line.split()
-                        if len(parts) >= 2:
-                            model_name = parts[0]
-                            model_size = parts[1] if len(parts) > 1 else "N/A"
-                            print(f"   📦 {model_name} ({model_size})")
-            
-            # Check for required model
-            if 'mistral:7b' in models_output:
-                print("✅ نموذج mistral:7b متاح")
+                        model_name = parts[0]
+                        model_size = parts[1] if len(parts) > 1 else "N/A"
+                        print(f" - {model_name} ({model_size})")
+            if "mistral:7b" in models_output:
+                print("Model mistral:7b is available")
                 return True
-            else:
-                print("⚠️ نموذج mistral:7b غير متاح")
-                print("💡 لتحميل النموذج:")
-                print("   ollama pull mistral:7b")
-                return False
-        else:
-            print("❌ لا يمكن الحصول على قائمة النماذج")
+            print("Model mistral:7b is not available. Pull it with: ollama pull mistral:7b")
             return False
-            
+        print("Could not list models")
+        return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار النماذج: {e}")
+        print(f"Error while listing models: {e}")
         return False
 
 def test_model_pull():
-    """Test model pulling functionality"""
-    print("\n📥 اختبار تحميل النموذج...")
-    
+    """Ensure mistral:7b is pulled (if not, try to pull)."""
+    print("Verifying model pull (mistral:7b)...")
     try:
-        # Check if model already exists
-        result = subprocess.run(['ollama', 'list'], capture_output=True, text=True)
-        
-        if result.returncode == 0 and 'mistral:7b' in result.stdout:
-            print("✅ نموذج mistral:7b موجود بالفعل")
+        result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
+        if result.returncode == 0 and "mistral:7b" in result.stdout:
+            print("mistral:7b already present")
             return True
-        
-        # Try to pull the model
-        print("📥 تحميل نموذج mistral:7b...")
-        print("⚠️ هذا قد يستغرق وقتاً طويلاً...")
-        
-        pull_result = subprocess.run(['ollama', 'pull', 'mistral:7b'], 
-                                   capture_output=True, text=True)
-        
+        print("Pulling mistral:7b (this may take time)...")
+        pull_result = subprocess.run(["ollama", "pull", "mistral:7b"], capture_output=True, text=True)
         if pull_result.returncode == 0:
-            print("✅ تم تحميل نموذج mistral:7b بنجاح")
+            print("Model pulled successfully")
             return True
-        else:
-            print("❌ فشل في تحميل النموذج")
-            print(f"خطأ: {pull_result.stderr}")
-            return False
-            
+        print("Failed to pull model")
+        if pull_result.stderr:
+            print(pull_result.stderr)
+        return False
     except Exception as e:
-        print(f"❌ خطأ في تحميل النموذج: {e}")
+        print(f"Error while pulling model: {e}")
         return False
 
 def test_chat_ollama():
-    """Test ChatOllama functionality"""
-    print("\n💬 اختبار ChatOllama...")
-    
+    """Smoke test ChatOllama."""
+    print("Testing ChatOllama...")
     try:
         from langchain_ollama import ChatOllama
-        
-        # Test ChatOllama initialization
-        llm = ChatOllama(
-            model="mistral:7b",
-            temperature=0.1,
-            num_gpu_layers=0,  # Use CPU for testing
-            num_thread=4
-        )
-        
-        print("✅ تم تهيئة ChatOllama")
-        
-        # Test simple query
+        llm = ChatOllama(model="mistral:7b", temperature=0.1, num_gpu_layers=0, num_thread=4)
+        print("ChatOllama initialized")
         try:
-            response = llm.invoke("Say hello in Arabic")
-            print("✅ نجح الاستعلام البسيط")
-            print(f"   الرد: {response.content[:100]}...")
+            response = llm.invoke("Say hello in English")
+            print("Simple query ok")
+            print(f"Response: {getattr(response, 'content', str(response))[:100]}...")
             return True
         except Exception as e:
-            print(f"❌ خطأ في الاستعلام: {str(e)[:100]}")
+            print(f"Query error: {str(e)[:100]}")
             return False
-            
     except ImportError:
-        print("❌ langchain_ollama غير مثبت")
-        print("💡 قم بتشغيل: pip install langchain_ollama")
+        print("langchain_ollama is not installed. Run: pip install langchain_ollama")
         return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار ChatOllama: {e}")
+        print(f"Error testing ChatOllama: {e}")
         return False
 
 def test_embeddings_ollama():
-    """Test Ollama embeddings"""
-    print("\n🔤 اختبار Ollama Embeddings...")
-    
+    """Smoke test OllamaEmbeddings."""
+    print("Testing OllamaEmbeddings...")
     try:
         from langchain_ollama import OllamaEmbeddings
-        
-        # Test embeddings initialization
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
-        print("✅ تم تهيئة Ollama Embeddings")
-        
-        # Test embedding generation
-        test_text = "Hello world"
+        print("OllamaEmbeddings initialized")
         try:
-            embedding = embeddings.embed_query(test_text)
-            print(f"✅ تم إنشاء التضمين (الطول: {len(embedding)})")
+            embedding = embeddings.embed_query("Hello world")
+            print(f"Embedding generated (len={len(embedding)})")
             return True
         except Exception as e:
-            print(f"❌ خطأ في إنشاء التضمين: {str(e)[:100]}")
+            print(f"Embedding error: {str(e)[:100]}")
             return False
-            
     except ImportError:
-        print("❌ langchain_ollama غير مثبت")
+        print("langchain_ollama is not installed")
         return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار Embeddings: {e}")
+        print(f"Error testing embeddings: {e}")
         return False
 
 def test_ollama_performance():
-    """Test Ollama performance"""
-    print("\n⚡ اختبار أداء Ollama...")
-    
+    """Very simple timing test."""
+    print("Testing Ollama performance...")
     try:
         from langchain_ollama import ChatOllama
-        
-        llm = ChatOllama(
-            model="mistral:7b",
-            temperature=0.1,
-            num_gpu_layers=0,
-            num_thread=4
-        )
-        
-        # Test response time
+        llm = ChatOllama(model="mistral:7b", temperature=0.1, num_gpu_layers=0, num_thread=4)
         start_time = time.time()
-        
         try:
-            response = llm.invoke("What is 2+2?")
-            end_time = time.time()
-            
-            response_time = end_time - start_time
-            print(f"✅ وقت الاستجابة: {response_time:.2f} ثانية")
-            
-            if response_time < 10:
-                print("✅ الأداء مقبول")
-                return True
-            else:
-                print("⚠️ الأداء بطيء")
-                return False
-                
+            _ = llm.invoke("What is 2+2?")
+            dt = time.time() - start_time
+            print(f"Response time: {dt:.2f}s")
+            return dt < 10
         except Exception as e:
-            print(f"❌ خطأ في اختبار الأداء: {str(e)[:100]}")
+            print(f"Performance query error: {str(e)[:100]}")
             return False
-            
     except Exception as e:
-        print(f"❌ خطأ في اختبار الأداء: {e}")
+        print(f"Error in performance test: {e}")
         return False
 
 def main():
-    """Run all Ollama tests"""
-    print("🚀 بدء اختبار Ollama...")
-    
+    print("Starting Ollama tests...")
     tests = [
-        ("تثبيت Ollama", test_ollama_installation),
-        ("خدمة Ollama", test_ollama_service),
-        ("النماذج المتاحة", test_available_models),
-        ("تحميل النموذج", test_model_pull),
+        ("Ollama installation", test_ollama_installation),
+        ("Ollama service", test_ollama_service),
+        ("Available models", test_available_models),
+        ("Model pull", test_model_pull),
         ("ChatOllama", test_chat_ollama),
-        ("Ollama Embeddings", test_embeddings_ollama),
-        ("أداء Ollama", test_ollama_performance)
+        ("Ollama embeddings", test_embeddings_ollama),
+        ("Ollama performance", test_ollama_performance),
     ]
-    
     passed = 0
     total = len(tests)
-    
-    for test_name, test_func in tests:
+    for name, func in tests:
         try:
-            if test_func():
+            ok = func()
+            print(f"- {name}: {'PASS' if ok else 'FAIL'}")
+            if ok:
                 passed += 1
         except Exception as e:
-            print(f"❌ خطأ غير متوقع في {test_name}: {e}")
-    
+            print(f"Unexpected error in {name}: {e}")
     print("\n" + "=" * 50)
-    print(f"📊 نتائج الاختبار: {passed}/{total} نجح")
-    
-    if passed == total:
-        print("🎉 جميع اختبارات Ollama نجحت!")
-        print("✅ Ollama جاهز للاستخدام مع رونا")
-    else:
-        print("⚠️ بعض اختبارات Ollama فشلت")
-        print("💡 راجع الأخطاء أعلاه")
-    
+    print(f"Results: {passed}/{total} passed")
     return passed == total
 
 if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+    sys.exit(0 if main() else 1)
