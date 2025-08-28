@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Test Vector Database Functionality
-اختبار وظائف قاعدة البيانات المتجهة
 """
 
 import sys
@@ -12,14 +11,14 @@ import shutil
 
 def test_embeddings():
     """Test embeddings model"""
-    print("🔤 اختبار نموذج التضمين...")
+    print("Testing embeddings model...")
     
     try:
         from langchain_ollama import OllamaEmbeddings
         
         # Test embeddings initialization
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
-        print("✅ تم تهيئة نموذج التضمين")
+        print("Embeddings model initialized")
         
         # Test embedding generation
         test_texts = [
@@ -32,9 +31,9 @@ def test_embeddings():
         for text in test_texts:
             try:
                 embedding = embeddings.embed_query(text)
-                print(f"✅ تم إنشاء تضمين للنص: '{text[:20]}...' (الطول: {len(embedding)})")
+                print(f"Embedding created for: '{text[:20]}...' (len: {len(embedding)})")
             except Exception as e:
-                print(f"❌ خطأ في إنشاء التضمين: {str(e)[:50]}")
+                print(f"Error generating embedding: {str(e)[:50]}")
         
         return True
         
@@ -44,7 +43,7 @@ def test_embeddings():
 
 def test_vector_database():
     """Test vector database operations"""
-    print("\n📚 اختبار قاعدة البيانات المتجهة...")
+    print("\nTesting vector database...")
     
     try:
         from langchain_ollama import OllamaEmbeddings
@@ -62,7 +61,7 @@ def test_vector_database():
                 embedding_function=embeddings
             )
             
-            print("✅ تم تهيئة قاعدة البيانات المتجهة")
+            print("Vector database initialized")
             
             # Test documents
             test_documents = [
@@ -75,7 +74,7 @@ def test_vector_database():
             
             # Add documents to database
             vector_db.add_documents(test_documents)
-            print(f"✅ تم إضافة {len(test_documents)} وثيقة إلى قاعدة البيانات")
+            print(f"Added {len(test_documents)} documents to DB")
             
             # Test search functionality
             search_queries = [
@@ -89,7 +88,7 @@ def test_vector_database():
             for query in search_queries:
                 try:
                     results = vector_db.similarity_search(query, k=2)
-                    print(f"✅ البحث عن '{query}': تم العثور على {len(results)} نتيجة")
+                    print(f"Search '{query}': found {len(results)} result(s)")
                     for i, doc in enumerate(results, 1):
                         print(f"   {i}. {doc.page_content[:50]}...")
                 except Exception as e:
@@ -98,24 +97,24 @@ def test_vector_database():
             # Test database count
             try:
                 count = vector_db._collection.count()
-                print(f"✅ عدد الوثائق في قاعدة البيانات: {count}")
+                print(f"Documents in DB: {count}")
             except Exception as e:
-                print(f"⚠️ لا يمكن الحصول على عدد الوثائق: {str(e)[:50]}")
+                print(f"Warning: cannot get DB document count: {str(e)[:50]}")
             
             return True
             
         finally:
             # Clean up temporary directory
             shutil.rmtree(temp_dir)
-            print("🧹 تم تنظيف الملفات المؤقتة")
+            print("Cleaned temporary files")
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار قاعدة البيانات: {e}")
+        print(f"Error in vector database test: {e}")
         return False
 
 def test_text_processing():
     """Test text processing and chunking"""
-    print("\n📝 اختبار معالجة النصوص...")
+    print("\nTesting text processing...")
     
     try:
         from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -123,11 +122,11 @@ def test_text_processing():
         
         # Create a temporary test file
         test_content = """
-        Python هي لغة برمجة عالية المستوى ومفسرة.
-        تم تطويرها بواسطة Guido van Rossum في عام 1991.
-        تتميز بسهولة التعلم والقراءة.
-        Python تدعم البرمجة الكائنية.
-        تستخدم في تطوير الويب والذكاء الاصطناعي.
+        Python is a high-level, interpreted programming language.
+        Created by Guido van Rossum in 1991.
+        Known for being easy to learn and read.
+        Python supports object-oriented programming.
+        Used in web development and artificial intelligence.
         """
         
         with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
@@ -138,7 +137,7 @@ def test_text_processing():
             # Test text loading
             loader = TextLoader(temp_file, encoding='utf-8')
             documents = loader.load()
-            print(f"✅ تم تحميل {len(documents)} وثيقة من الملف")
+            print(f"Loaded {len(documents)} document(s) from file")
             
             # Test text splitting
             text_splitter = RecursiveCharacterTextSplitter(
@@ -149,10 +148,10 @@ def test_text_processing():
             )
             
             chunked_documents = text_splitter.split_documents(documents)
-            print(f"✅ تم تقسيم النص إلى {len(chunked_documents)} جزء")
+            print(f"Split into {len(chunked_documents)} chunk(s)")
             
             for i, chunk in enumerate(chunked_documents, 1):
-                print(f"   جزء {i}: {chunk.page_content[:50]}...")
+                print(f"   Chunk {i}: {chunk.page_content[:50]}...")
             
             return True
             
@@ -161,12 +160,12 @@ def test_text_processing():
             os.unlink(temp_file)
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار معالجة النصوص: {e}")
+        print(f"Error in text processing test: {e}")
         return False
 
 def test_database_integration():
     """Test full database integration"""
-    print("\n🔗 اختبار تكامل قاعدة البيانات...")
+    print("\nTesting database integration...")
     
     try:
         from langchain_ollama import OllamaEmbeddings
@@ -218,7 +217,7 @@ def test_database_integration():
             
             # Add to database
             vector_db.add_documents(chunked_docs)
-            print(f"✅ تم إضافة {len(chunked_docs)} جزء إلى قاعدة البيانات")
+            print(f"Added {len(chunked_docs)} chunk(s) to DB")
             
             # Test various searches
             search_tests = [
@@ -231,12 +230,9 @@ def test_database_integration():
             for query, description in search_tests:
                 try:
                     results = vector_db.similarity_search(query, k=1)
-                    if results:
-                        print(f"✅ البحث عن '{description}': نجح")
-                    else:
-                        print(f"⚠️ البحث عن '{description}': لم يعيد نتائج")
+                    print(f"Search '{description}': {'found' if results else 'no'} results")
                 except Exception as e:
-                    print(f"❌ خطأ في البحث عن '{description}': {str(e)[:50]}")
+                    print(f"Error searching '{description}': {str(e)[:50]}")
             
             return True
             
@@ -244,18 +240,18 @@ def test_database_integration():
             shutil.rmtree(temp_dir)
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار التكامل: {e}")
+        print(f"Error in integration test: {e}")
         return False
 
 def main():
     """Run all database tests"""
-    print("🚀 بدء اختبار قاعدة البيانات المتجهة...")
+    print("Starting vector database tests...")
     
     tests = [
-        ("نموذج التضمين", test_embeddings),
-        ("قاعدة البيانات المتجهة", test_vector_database),
-        ("معالجة النصوص", test_text_processing),
-        ("تكامل قاعدة البيانات", test_database_integration)
+        ("Embeddings", test_embeddings),
+        ("Vector DB", test_vector_database),
+        ("Text processing", test_text_processing),
+        ("DB integration", test_database_integration)
     ]
     
     passed = 0
@@ -266,17 +262,15 @@ def main():
             if test_func():
                 passed += 1
         except Exception as e:
-            print(f"❌ خطأ غير متوقع في {test_name}: {e}")
+            print(f"Unexpected error in {test_name}: {e}")
     
     print("\n" + "=" * 50)
-    print(f"📊 نتائج الاختبار: {passed}/{total} نجح")
+    print(f"Results: {passed}/{total} passed")
     
     if passed == total:
-        print("🎉 جميع اختبارات قاعدة البيانات نجحت!")
-        print("✅ قاعدة البيانات المتجهة جاهزة للاستخدام")
+        print("All DB tests passed. Vector DB is ready.")
     else:
-        print("⚠️ بعض اختبارات قاعدة البيانات فشلت")
-        print("💡 راجع الأخطاء أعلاه")
+        print("Some DB tests failed. Check errors above.")
     
     return passed == total
 

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Test GUI Components
-اختبار مكونات واجهة المستخدم
 """
 
 import sys
@@ -11,7 +10,7 @@ from tkinter import messagebox
 
 def test_customtkinter():
     """Test CustomTkinter installation and basic functionality"""
-    print("🎨 اختبار CustomTkinter...")
+    print("Testing CustomTkinter...")
     
     try:
         import customtkinter as ctk
@@ -20,44 +19,43 @@ def test_customtkinter():
         root = ctk.CTk()
         root.withdraw()  # Hide the window
         
-        print("✅ تم إنشاء نافذة CustomTkinter")
+        print("CustomTkinter window created")
         
         # Test basic widgets
-        label = ctk.CTkLabel(root, text="اختبار")
-        button = ctk.CTkButton(root, text="زر")
+        label = ctk.CTkLabel(root, text="Test")
+        button = ctk.CTkButton(root, text="Button")
         entry = ctk.CTkEntry(root)
         textbox = ctk.CTkTextbox(root)
         frame = ctk.CTkFrame(root)
         
-        print("✅ تم إنشاء العناصر الأساسية")
+        print("Basic widgets created")
         
         # Test appearance modes
         ctk.set_appearance_mode("dark")
-        print("✅ تم تعيين الوضع المظلم")
+        print("Dark mode set")
         
         ctk.set_appearance_mode("light")
-        print("✅ تم تعيين الوضع المضيء")
+        print("Light mode set")
         
         # Test color themes
         ctk.set_default_color_theme("blue")
-        print("✅ تم تعيين السمة الزرقاء")
+        print("Blue theme set")
         
         root.destroy()
-        print("✅ تم إغلاق النافذة بنجاح")
+        print("Window closed successfully")
         
         return True
         
     except ImportError:
-        print("❌ CustomTkinter غير مثبت")
-        print("💡 قم بتشغيل: pip install customtkinter")
+        print("customtkinter not installed. Run: pip install customtkinter")
         return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار CustomTkinter: {e}")
+        print(f"Error in CustomTkinter test: {e}")
         return False
 
 def test_tkinter_components():
     """Test basic Tkinter components"""
-    print("\n🖥️ اختبار مكونات Tkinter الأساسية...")
+    print("\nTesting basic Tkinter components...")
     
     try:
         # Test basic Tkinter
@@ -70,7 +68,7 @@ def test_tkinter_components():
         entry = tk.Entry(root)
         text_widget = tk.Text(root)
         
-        print("✅ تم إنشاء عناصر Tkinter الأساسية")
+        print("Tkinter basic widgets created")
         
         # Test clipboard operations
         root.clipboard_clear()
@@ -78,20 +76,20 @@ def test_tkinter_components():
         clipboard_content = root.clipboard_get()
         
         if clipboard_content == "Test text":
-            print("✅ عمليات الحافظة تعمل")
+            print("Clipboard operations OK")
         else:
-            print("⚠️ مشكلة في عمليات الحافظة")
+            print("Clipboard operations issue")
         
         root.destroy()
         return True
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار Tkinter: {e}")
+        print(f"Error in Tkinter test: {e}")
         return False
 
 def test_file_dialog():
     """Test file dialog functionality"""
-    print("\n📁 اختبار مربع حوار الملفات...")
+    print("\nTesting file dialog...")
     
     try:
         from tkinter import filedialog
@@ -110,7 +108,7 @@ def test_file_dialog():
         try:
             # We'll just test that the function exists and can be called
             # In a real test, we'd need to mock the dialog
-            print("✅ دالة مربع حوار الملفات متاحة")
+            print("filedialog function available")
             root.destroy()
             return True
         except Exception as e:
@@ -119,15 +117,15 @@ def test_file_dialog():
             return False
             
     except ImportError:
-        print("❌ tkinter.filedialog غير متاح")
+        print("tkinter.filedialog not available")
         return False
     except Exception as e:
-        print(f"❌ خطأ في اختبار مربع حوار الملفات: {e}")
+        print(f"Error in file dialog test: {e}")
         return False
 
 def test_text_widget():
     """Test text widget functionality"""
-    print("\n📝 اختبار عنصر النص...")
+    print("\nTesting Text widget...")
     
     try:
         root = tk.Tk()
@@ -136,22 +134,22 @@ def test_text_widget():
         text_widget = tk.Text(root)
         
         # Test text insertion
-        text_widget.insert("1.0", "نص تجريبي للاختبار")
+        text_widget.insert("1.0", "Sample text for testing")
         content = text_widget.get("1.0", "end-1c")
         
-        if "نص تجريبي" in content:
-            print("✅ إدراج النص يعمل")
+        if "Sample text" in content:
+            print("Text insert OK")
         else:
-            print("❌ مشكلة في إدراج النص")
+            print("Text insert issue")
         
         # Test text selection
         text_widget.tag_add("sel", "1.0", "1.5")
         selected = text_widget.tag_ranges("sel")
         
         if selected:
-            print("✅ تحديد النص يعمل")
+            print("Selection OK")
         else:
-            print("❌ مشكلة في تحديد النص")
+            print("Selection issue")
         
         # Test text tags
         text_widget.tag_configure("test_tag", foreground="red")
@@ -159,20 +157,20 @@ def test_text_widget():
         
         tags = text_widget.tag_names("1.0")
         if "test_tag" in tags:
-            print("✅ علامات النص تعمل")
+            print("Text tags OK")
         else:
-            print("❌ مشكلة في علامات النص")
+            print("Text tags issue")
         
         root.destroy()
         return True
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار عنصر النص: {e}")
+        print(f"Error in text widget test: {e}")
         return False
 
 def test_scrollbar():
     """Test scrollbar functionality"""
-    print("\n📜 اختبار شريط التمرير...")
+    print("\nTesting scrollbar...")
     
     try:
         root = tk.Tk()
@@ -185,27 +183,27 @@ def test_scrollbar():
         
         # Add some text to make scrolling possible
         for i in range(20):
-            text_widget.insert("end", f"سطر {i+1}\n")
+            text_widget.insert("end", f"Line {i+1}\n")
         
-        print("✅ تم إنشاء شريط التمرير")
+        print("Scrollbar created")
         
         # Test scrollbar commands
         try:
             scrollbar.set(0.0, 0.5)  # Set scrollbar position
-            print("✅ تحكم شريط التمرير يعمل")
+            print("Scrollbar control OK")
         except Exception as e:
-            print(f"❌ مشكلة في تحكم شريط التمرير: {e}")
+            print(f"Scrollbar control issue: {e}")
         
         root.destroy()
         return True
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار شريط التمرير: {e}")
+        print(f"Error in scrollbar test: {e}")
         return False
 
 def test_message_box():
     """Test message box functionality"""
-    print("\n💬 اختبار مربع الرسائل...")
+    print("\nTesting message box...")
     
     try:
         root = tk.Tk()
@@ -215,7 +213,7 @@ def test_message_box():
         try:
             # We'll just test that the function exists
             # In a real test, we'd need to mock the dialog
-            print("✅ دالة مربع الرسائل متاحة")
+            print("messagebox function available")
             root.destroy()
             return True
         except Exception as e:
@@ -224,53 +222,53 @@ def test_message_box():
             return False
             
     except Exception as e:
-        print(f"❌ خطأ في اختبار مربع الرسائل: {e}")
+        print(f"Error in message box test: {e}")
         return False
 
 def test_arabic_text():
     """Test Arabic text rendering"""
-    print("\n🌐 اختبار عرض النص العربي...")
+    print("\nTesting Arabic text rendering...")
     
     try:
         root = tk.Tk()
         root.withdraw()
         
         # Test Arabic text in different widgets
-        arabic_text = "مرحباً بالعالم! هذا نص عربي للاختبار."
+        arabic_text = "مرحبا بالعالم! هذا نص عربي للاختبار."
         
         # Test in Label
         label = tk.Label(root, text=arabic_text)
-        print("✅ النص العربي في Label")
+        print("Arabic label OK")
         
         # Test in Entry
         entry = tk.Entry(root)
         entry.insert(0, arabic_text)
-        print("✅ النص العربي في Entry")
+        print("Arabic entry OK")
         
         # Test in Text widget
         text_widget = tk.Text(root)
         text_widget.insert("1.0", arabic_text)
-        print("✅ النص العربي في Text widget")
+        print("Arabic text widget OK")
         
         # Test right-to-left text
         try:
             # Some systems support RTL text
-            rtl_text = "نص من اليمين إلى اليسار"
+            rtl_text = "نص عربي RTL"
             text_widget.insert("end", f"\n{rtl_text}")
-            print("✅ النص من اليمين إلى اليسار")
+            print("Arabic RTL OK")
         except Exception as e:
-            print(f"⚠️ النص من اليمين إلى اليسار: {e}")
+            print(f"RTL note: {e}")
         
         root.destroy()
         return True
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار النص العربي: {e}")
+        print(f"Error in Arabic text test: {e}")
         return False
 
 def test_gui_performance():
     """Test GUI performance"""
-    print("\n⚡ اختبار أداء واجهة المستخدم...")
+    print("\nTesting GUI performance...")
     
     try:
         import time
@@ -289,50 +287,50 @@ def test_gui_performance():
         end_time = time.time()
         creation_time = end_time - start_time
         
-        print(f"✅ إنشاء 100 عنصر: {creation_time:.3f} ثانية")
+        print(f"Create 100 widgets: {creation_time:.3f} s")
         
         if creation_time < 1.0:
-            print("✅ أداء إنشاء العناصر مقبول")
+            print("Widget creation performance OK")
         else:
-            print("⚠️ أداء إنشاء العناصر بطيء")
+            print("Widget creation performance slow")
         
         # Test text widget performance
         text_widget = tk.Text(root)
         start_time = time.time()
         
         for i in range(1000):
-            text_widget.insert("end", f"سطر {i+1}\n")
+            text_widget.insert("end", f"Line {i+1}\n")
         
         end_time = time.time()
         text_time = end_time - start_time
         
-        print(f"✅ إدراج 1000 سطر: {text_time:.3f} ثانية")
+        print(f"Insert 1000 lines: {text_time:.3f} s")
         
         if text_time < 2.0:
-            print("✅ أداء إدراج النص مقبول")
+            print("Text insert performance OK")
         else:
-            print("⚠️ أداء إدراج النص بطيء")
+            print("Text insert performance slow")
         
         root.destroy()
         return True
         
     except Exception as e:
-        print(f"❌ خطأ في اختبار الأداء: {e}")
+        print(f"Error in GUI performance test: {e}")
         return False
 
 def main():
     """Run all GUI tests"""
-    print("🚀 بدء اختبار واجهة المستخدم...")
+    print("Starting GUI tests...")
     
     tests = [
         ("CustomTkinter", test_customtkinter),
-        ("مكونات Tkinter", test_tkinter_components),
-        ("مربع حوار الملفات", test_file_dialog),
-        ("عنصر النص", test_text_widget),
-        ("شريط التمرير", test_scrollbar),
-        ("مربع الرسائل", test_message_box),
-        ("النص العربي", test_arabic_text),
-        ("أداء واجهة المستخدم", test_gui_performance)
+        ("Tkinter components", test_tkinter_components),
+        ("File dialog", test_file_dialog),
+        ("Text widget", test_text_widget),
+        ("Scrollbar", test_scrollbar),
+        ("Message box", test_message_box),
+        ("Arabic text", test_arabic_text),
+        ("GUI performance", test_gui_performance)
     ]
     
     passed = 0
@@ -343,17 +341,15 @@ def main():
             if test_func():
                 passed += 1
         except Exception as e:
-            print(f"❌ خطأ غير متوقع في {test_name}: {e}")
+            print(f"Unexpected error in {test_name}: {e}")
     
     print("\n" + "=" * 50)
-    print(f"📊 نتائج الاختبار: {passed}/{total} نجح")
+    print(f"Results: {passed}/{total} passed")
     
     if passed == total:
-        print("🎉 جميع اختبارات واجهة المستخدم نجحت!")
-        print("✅ واجهة المستخدم جاهزة للاستخدام")
+        print("All GUI tests passed. GUI is ready.")
     else:
-        print("⚠️ بعض اختبارات واجهة المستخدم فشلت")
-        print("💡 راجع الأخطاء أعلاه")
+        print("Some GUI tests failed. Check errors above.")
     
     return passed == total
 
