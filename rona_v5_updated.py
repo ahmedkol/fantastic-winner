@@ -12,6 +12,7 @@ import uuid
 import subprocess
 import platform
 from pyarabic.araby import strip_tashkeel, normalize_hamza, normalize_ligature
+import sys
 
 # Import internet search functionality
 from internet_search import create_web_search_tool, create_web_content_tool
@@ -33,8 +34,37 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
 # --- Global Configurations ---
+def _configure_external_paths():
+    """Ensure external venv/site-packages and chroma_db paths are recognized regardless of app location.
+    Environment overrides:
+      - RONA_VENV_BASE: base path of external venv (default: D:\\Expand\\Ai on Windows)
+      - RONA_CHROMA_DIR: absolute path to chroma_db directory
+    """
+    try:
+        is_windows = os.name == 'nt'
+        default_venv_base = r'D:\\Expand\\Ai' if is_windows else ''
+        venv_base = os.environ.get('RONA_VENV_BASE', default_venv_base)
+        # Add external site-packages to sys.path if present (Windows layout)
+        if venv_base:
+            site_pkgs = os.path.join(venv_base, 'Lib', 'site-packages')
+            if os.path.isdir(site_pkgs) and site_pkgs not in sys.path:
+                sys.path.insert(0, site_pkgs)
+        # Determine chroma dir
+        chroma_env = os.environ.get('RONA_CHROMA_DIR')
+        if chroma_env and os.path.isdir(chroma_env):
+            return chroma_env
+        # If chroma_db exists under external base, use it
+        if venv_base:
+            chroma_candidate = os.path.join(venv_base, 'chroma_db')
+            if os.path.isdir(chroma_candidate):
+                return chroma_candidate
+        # Fallback to local folder
+        return os.path.abspath(os.path.join(os.getcwd(), 'chroma_db'))
+    except Exception:
+        return os.path.abspath(os.path.join(os.getcwd(), 'chroma_db'))
+
 MODEL_NAME = "mistral:7b"
-VECTOR_DB_DIR = "./chroma_db"
+VECTOR_DB_DIR = _configure_external_paths()
 MEMORY_FILE = "agent_memory.json"
 CONVERSATION_HISTORY_FILE = "conversation_history.json"
 
