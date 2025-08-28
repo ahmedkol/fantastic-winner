@@ -11,6 +11,7 @@ import re
 import uuid
 import subprocess
 import platform
+from pyarabic.araby import strip_tashkeel, normalize_hamza, normalize_ligature
 
 # Import internet search functionality
 from internet_search import create_web_search_tool, create_web_content_tool
@@ -457,6 +458,13 @@ class RonaApp(ctk.CTk):
     def send_message(self, event=None):
         """Send user message to agent"""
         user_message = self.user_input.get().strip()
+        # Arabic normalization to improve intent understanding
+        try:
+            if user_message:
+                normalized = normalize_ligature(normalize_hamza(strip_tashkeel(user_message)))
+                user_message = normalized
+        except Exception:
+            pass
         if user_message:
             self.user_input.delete(0, "end")
             self.user_input.configure(state="disabled")
@@ -513,7 +521,16 @@ class RonaApp(ctk.CTk):
             save_memory_to_file(self.agent_memory)
 
         except Exception as e:
-            error_message = f"حدث خطأ أثناء معالجة الرسالة: {str(e)[:100]}"
+            msg = str(e)
+            if 'actively refused' in msg or 'WinError 10061' in msg:
+                error_message = (
+                    "❌ لا يمكن الاتصال بخدمة Ollama (WinError 10061).\n"
+                    "- تأكد من تشغيل Ollama: شغّل الأمر: ollama serve\n"
+                    "- ثم تأكد من وجود النموذج: ollama pull mistral:7b\n"
+                    "- بعد ذلك أعد تشغيل التطبيق."
+                )
+            else:
+                error_message = f"حدث خطأ أثناء معالجة الرسالة: {msg[:100]}"
             self.after(0, self.display_agent_response, error_message)
         finally:
             self.after(0, self.enable_input)
