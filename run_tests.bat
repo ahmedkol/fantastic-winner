@@ -15,8 +15,10 @@ if exist "%VENV_DIR%\Scripts\activate.bat" (
 REM Move to the script directory
 pushd %~dp0
 
-REM Ensure UTF-8 console to avoid encoding issues
+REM Ensure UTF-8 console and Python IO encoding to avoid encoding issues
 chcp 65001 > nul
+set PYTHONIOENCODING=utf-8
+set PYTHONUTF8=1
 
 REM Optional: install requirements
 REM python -m pip install -r requirements.txt
