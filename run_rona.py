@@ -112,6 +112,18 @@ def main():
     print("🚀 بدء تشغيل Rona_v5 مع ميزة البحث في الإنترنت...")
     print("=" * 50)
     
+    # Ensure Rona can discover packages installed in external venv site-packages
+    try:
+        is_windows = os.name == 'nt'
+        default_venv_base = r'D:\\Expand\\Ai' if is_windows else ''
+        venv_base = os.environ.get('RONA_VENV_BASE', default_venv_base)
+        if venv_base:
+            site_pkgs = os.path.join(venv_base, 'Lib', 'site-packages')
+            if os.path.isdir(site_pkgs) and site_pkgs not in sys.path:
+                sys.path.insert(0, site_pkgs)
+    except Exception:
+        pass
+    
     # Check dependencies
     print("📦 فحص المكتبات المطلوبة...")
     if not check_dependencies():
